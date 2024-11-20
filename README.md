@@ -1,1 +1,1 @@
-Git repository: https://github.com/Oseembiya/Server/
+Git repository: https://github.com/Oseembiya/MyServer/

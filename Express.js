@@ -41,7 +41,7 @@ client
 
 app.set("json spaces", 3);
 
-// Static file for lesson images
+// Static file for lesson images with CORS headers
 const imagePath = path.resolve(__dirname, "images");
 app.use("/images", (req, res, next) => {
   const fileRequested = path.join(imagePath, req.path);
@@ -51,7 +51,8 @@ app.use("/images", (req, res, next) => {
       // File does not exist, return error message
       res.status(404).json({ error: "Image not found" });
     } else {
-      // File exists, serve it
+      // File exists, serve it with CORS headers
+      res.setHeader("Access-Control-Allow-Origin", "*");
       res.sendFile(fileRequested);
     }
   });
@@ -61,13 +62,6 @@ app.use("/images", (req, res, next) => {
 app.use(cors()); // Enable CORS
 app.use(morgan("combined")); // Use morgan for detailed logging
 app.use(express.json()); // Parse JSON bodies
-
-// log middleware
-app.use((req, res, next) => {
-  const now = new Date().toISOString();
-  console.log(`[${now}] ${req.method} request to ${req.url}`);
-  next();
-});
 
 // Routes
 
@@ -79,7 +73,7 @@ app.get("/search", async (req, res) => {
   }
 
   try {
-    const lessons = db.collection("classActivity");
+    const lessons = db.collection("lessons");
 
     // Perform the full-text search across multiple fields
     const results = await lessons
@@ -158,7 +152,7 @@ app.put("/updateLesson/:id", function (req, res, next) {
     return res.status(400).json({ error: "No data provided for update." });
   }
 
-  const lessons = db.collection("classActivity");
+  const lessons = db.collection("lessons");
 
   // Perform the update operation using promises
   lessons
