@@ -50,6 +50,8 @@ client
     process.exit(1); // Exit the process if the database connection fails
   });
 
+app.set("json spaces", 3);
+
 // Static file for lesson images with CORS headers
 const imagePath = path.resolve(__dirname, "images");
 app.use("/images", (req, res, next) => {
@@ -136,8 +138,10 @@ app.post("/order", function (req, res, next) {
   const { orderInfo, lessonId } = orderData;
 
   // Validate lessonId to be an array
-  if (!Array.isArray(lessonId) || lessonId.length === 0) {
-    return res.status(400).json({ error: "lessonId IDs are required." });
+  if (!lessonId.every((id) => ObjectId.isValid(id))) {
+    return res
+      .status(400)
+      .json({ error: "One or more lesson IDs are invalid." });
   }
 
   // Log the order data for debugging purposes
