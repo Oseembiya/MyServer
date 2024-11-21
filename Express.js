@@ -8,7 +8,7 @@ const fs = require("fs");
 
 const app = express(); // create express instance
 
-// configure connection
+// Configure connection
 let propertiesPath = path.resolve(
   __dirname,
   "fetch-server",
@@ -31,15 +31,24 @@ let db = client.db(dbName);
 // Console log MongoDB connection status
 client
   .connect()
-  .then(() => {
+  .then(async () => {
     console.log("MongoDB connected successfully");
+
+    // Create text index on 'subject' and 'location etc'
+    try {
+      const lessons = db.collection("lessons");
+      const indexResult = await lessons.createIndex({
+        subject: "text",
+        location: "text",
+      });
+    } catch (indexError) {
+      console.error("Error creating index:", indexError);
+    }
   })
   .catch((err) => {
     console.error("MongoDB connection failed", err);
     process.exit(1); // Exit the process if the database connection fails
   });
-
-app.set("json spaces", 3);
 
 // Static file for lesson images with CORS headers
 const imagePath = path.resolve(__dirname, "images");
@@ -75,18 +84,33 @@ app.get("/search", async (req, res) => {
   try {
     const lessons = db.collection("lessons");
 
-    // Perform the full-text search across multiple fields
+    // Perform a full-text search (ensure you created the correct text index)
     const results = await lessons
       .find({
         $text: { $search: searchQuery }, // Full-text search using $text
       })
       .toArray();
 
+    // If no results are found, fallback to regex search
     if (results.length === 0) {
-      return res.status(404).json({ error: "No lessons found." });
+      const regexResults = await lessons
+        .find({
+          $or: [
+            { subject: { $regex: searchQuery, $options: "i" } }, // Regex search on subject field
+            { location: { $regex: searchQuery, $options: "i" } },
+            // Regex search on location field
+          ],
+        })
+        .toArray();
+
+      if (regexResults.length === 0) {
+        return res.status(404).json({ error: "No lessons found." });
+      }
+
+      return res.json(regexResults); // Return regex-based results if found
     }
 
-    res.json(results); // Send results to the frontend
+    res.json(results); // Return full-text search results
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "An error occurred during the search." });
@@ -182,7 +206,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server
+// Start the server listening in port 8000
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, function () {
   console.log(`Server is running on http://localhost:${PORT}`);
