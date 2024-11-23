@@ -214,6 +214,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, function () {
   console.log(
-    `Server is running on https://vueappliaction-env.eba-qkd3evgp.eu-west-2.elasticbeanstalk.com${PORT}`
+    `Server is running on https://vueappliaction-env.eba-qkd3evgp.eu-west-2.elasticbeanstalk.com/${PORT}`
   );
 });
