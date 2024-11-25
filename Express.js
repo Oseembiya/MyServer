@@ -76,7 +76,7 @@ app.use(express.json()); // Parse JSON bodies
 
 // Routes
 
-app.get("/search", async (req, res) => {
+app.get("/search", async (req, res, next) => {
   const searchQuery = req.query.q; // Capture the query parameter
 
   if (!searchQuery) {
@@ -106,7 +106,8 @@ app.get("/search", async (req, res) => {
         .toArray();
 
       if (regexResults.length === 0) {
-        return res.status(404).json({ error: "No lessons found." });
+        // Pass the error to the error handler
+        return next(new Error("No lessons found."));
       }
 
       return res.json(regexResults); // Return regex-based results if found
@@ -114,8 +115,8 @@ app.get("/search", async (req, res) => {
 
     res.json(results); // Return full-text search results
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "An error occurred during the search." });
+    // Pass the caught error to the error handler
+    next(error);
   }
 });
 
@@ -201,7 +202,7 @@ app.put("/updateLesson/:id", function (req, res, next) {
     });
 });
 
-// Middleware for error handling
+// Middleware for error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
@@ -211,7 +212,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server listening in port 8000
-const PORT = process.env.PORT || 443;
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, function () {
   console.log(
     `Server is running on https://vueappliaction-env.eba-qkd3evgp.eu-west-2.elasticbeanstalk.com/${PORT}`
