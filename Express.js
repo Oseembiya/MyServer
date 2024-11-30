@@ -212,7 +212,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server listening in port 8000
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 443;
 app.listen(PORT, function () {
   console.log(
     `Server is running on https://vueappliaction-env.eba-qkd3evgp.eu-west-2.elasticbeanstalk.com/${PORT}`
