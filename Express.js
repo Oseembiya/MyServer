@@ -80,7 +80,7 @@ app.get("/search", async (req, res, next) => {
   const searchQuery = req.query.q; // Capture the query parameter
 
   if (!searchQuery) {
-    return res.status(400).json({ error: "Search query is required." });
+    return res.status(406).json({ error: "Search query is required." });
   }
 
   try {
@@ -171,14 +171,14 @@ app.put("/updateLesson/:id", function (req, res, next) {
 
   // Validate the lesson ID format
   if (!ObjectId.isValid(lessonId)) {
-    return res.status(400).json({ error: "Invalid lesson ID." });
+    return res.status(408).json({ error: "Invalid lesson ID." });
   }
 
   const updatedData = req.body;
 
   // Check if the updated data is provided
   if (!updatedData || Object.keys(updatedData).length === 0) {
-    return res.status(400).json({ error: "No data provided for update." });
+    return res.status(408).json({ error: "No data provided for update." });
   }
 
   const lessons = db.collection("lessons");
@@ -192,7 +192,7 @@ app.put("/updateLesson/:id", function (req, res, next) {
         res.json({ message: "Lesson updated successfully" });
       } else {
         res
-          .status(404)
+          .status(408)
           .json({ error: "Lesson not found or no fields changed." });
       }
     })
