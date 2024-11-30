@@ -211,7 +211,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server listening in port 8000
+// Start the server listening in port 443
 const PORT = process.env.PORT || 443;
 app.listen(PORT, function () {
   console.log(
