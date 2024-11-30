@@ -202,6 +202,12 @@ app.put("/updateLesson/:id", function (req, res, next) {
     });
 });
 
+// Checking the health of my server
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "healthy" });
+});
+
+
 // Middleware for error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
