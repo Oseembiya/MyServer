@@ -1,23 +1,27 @@
 {
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.21.1",
-    "latest": "^0.2.0",
-    "mongodb": "^6.10.0",
-    "morgan": "^1.10.0",
-    "nodemon": "^3.1.7",
-    "properties-reader": "^2.3.0"
-  },
   "name": "server",
   "version": "1.0.0",
-  "main": "Express.js",
+  "description": "Express server for lesson management system",
+  "main": "src/app.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node Express.js",
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "mongodb": "^6.10.0",
+    "morgan": "^1.10.0",
+    "properties-reader": "^2.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.27.1",
+    "@babel/eslint-parser": "^7.27.1",
+    "nodemon": "^3.1.7"
+  }
 }
