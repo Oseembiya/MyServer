@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: my-lesson-api
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm run render-start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.x

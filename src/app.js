@@ -22,24 +22,63 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// CORS configuration
+const allowedOrigins = [
+  "http://localhost:5173", // Vue development server
+  "http://localhost:8000", // Local development
+  "https://*.vercel.app", // Vercel deployments
+  "https://*.onrender.com", // Render deployments
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      if (
+        allowedOrigins.some((allowedOrigin) => {
+          if (allowedOrigin.includes("*")) {
+            const pattern = allowedOrigin.replace("*", ".*");
+            return new RegExp(pattern).test(origin);
+          }
+          return allowedOrigin === origin;
+        })
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 // Middleware
-app.use(cors());
 app.use(morgan("combined"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Root route
 app.get("/", (req, res) => {
-  res.json({
-    message: "Welcome to the Lesson Management API",
-    version: "1.0.0",
-    status: "operational",
-    endpoints: {
-      lessons: "/lessons",
-      orders: "/order",
-      health: "/health",
-    },
-  });
+  console.log("Root route accessed");
+  try {
+    res.json({
+      message: "Welcome to the Lesson Management API",
+      version: "1.0.0",
+      status: "operational",
+      endpoints: {
+        lessons: "/lessons",
+        orders: "/order",
+        health: "/health",
+      },
+    });
+  } catch (error) {
+    console.error("Error in root route:", error);
+    res.status(500).json({ error: "Server error in root route" });
+  }
 });
 
 // Database middleware
@@ -77,6 +116,15 @@ app.get("/health", (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || "development",
+  });
+});
+
+// Catch-all route for 404s
+app.use("*", (req, res) => {
+  console.log(`404 Not Found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({
+    error: "Not Found",
+    message: `The requested resource at ${req.originalUrl} was not found`,
   });
 });
 
