@@ -97,23 +97,30 @@ app.use(async (req, res, next) => {
 });
 
 // Static file serving for lesson images with CORS headers
-const imagePath = path.resolve(__dirname, "../images");
-app.use("/images", (req, res, next) => {
-  const fileRequested = path.join(imagePath, req.path);
-  fs.access(fileRequested, fs.constants.F_OK, (err) => {
-    if (err) {
-      res.status(404).json({ error: "Image not found" });
-    } else {
-      // Set specific CORS headers for images
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization"
-      );
-      res.sendFile(fileRequested);
-    }
-  });
+const imagePath = path.resolve(__dirname, "../");
+app.use("/", (req, res, next) => {
+  // Check if the request path starts with /images/
+  if (req.path.startsWith("/images/")) {
+    const fileRequested = path.join(imagePath, req.path);
+    fs.access(fileRequested, fs.constants.F_OK, (err) => {
+      if (err) {
+        // If image not found, pass to next middleware
+        return next();
+      } else {
+        // Set specific CORS headers for images
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.setHeader(
+          "Access-Control-Allow-Headers",
+          "Content-Type, Authorization"
+        );
+        return res.sendFile(fileRequested);
+      }
+    });
+  } else {
+    // Not an image request, pass to next middleware
+    next();
+  }
 });
 
 // Routes
