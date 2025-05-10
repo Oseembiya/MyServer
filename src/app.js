@@ -12,8 +12,12 @@ const ordersRouter = require("./routes/orders");
 
 const app = express();
 
-// Security middleware
-app.use(helmet());
+// Security middleware with crossOriginResourcePolicy disabled to allow image loading
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false, // Allow loading resources from different origins
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -67,7 +71,7 @@ app.get("/", (req, res) => {
   console.log("Root route accessed");
   try {
     res.json({
-      message: "Welcome to the Lesson Management API",
+      message: "Welcome to the ParentPay app",
       version: "1.0.0",
       status: "operational",
       endpoints: {
