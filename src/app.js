@@ -28,6 +28,7 @@ const allowedOrigins = [
   "http://localhost:8000", // Local development
   "https://*.vercel.app", // Vercel deployments
   "https://*.onrender.com", // Render deployments
+  "https://oseembiya.github.io", // GitHub Pages deployment
 ];
 
 app.use(
@@ -99,7 +100,13 @@ app.use("/images", (req, res, next) => {
     if (err) {
       res.status(404).json({ error: "Image not found" });
     } else {
+      // Set specific CORS headers for images
       res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization"
+      );
       res.sendFile(fileRequested);
     }
   });
