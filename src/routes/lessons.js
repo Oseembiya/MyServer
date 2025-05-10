@@ -3,7 +3,7 @@ const router = express.Router();
 const { ObjectId } = require("mongodb");
 
 // Get all lessons
-router.get("/", async (req, res, next) => {
+router.get("/lessons", async (req, res, next) => {
   try {
     const lessons = await req.db.collection("lessons").find({}).toArray();
     res.json(lessons);
