@@ -1,30 +1,34 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
-const PropertiesReader = require("properties-reader");
-const path = require("path");
+require("dotenv").config();
 
-// Configure connection
-const propertiesPath = path.resolve(
-  __dirname,
-  "../../fetch-server/conf/db.properties"
-);
-const properties = PropertiesReader(propertiesPath);
+// Production-ready MongoDB configuration
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+  throw new Error("MONGODB_URI environment variable is not set");
+}
 
-const dbPrefix = properties.get("db.prefix");
-const dbUser = properties.get("db.user");
-const dbPwd = encodeURIComponent(properties.get("db.pwd"));
-const dbName = properties.get("db.dbName");
-const dbUrl = properties.get("db.dbUrl");
-const dbParams = properties.get("db.params");
+const client = new MongoClient(uri, {
+  serverApi: ServerApiVersion.v1,
+  maxPoolSize: 50,
+  minPoolSize: 10,
+  connectTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+  family: 4,
+});
 
-// Constructing URI
-const uri = `${dbPrefix}${dbUser}:${dbPwd}${dbUrl}${dbParams}`;
-const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
+let isConnected = false;
 
 async function connectToDatabase() {
+  if (isConnected) {
+    return client.db(process.env.MONGODB_DB_NAME || "Databas");
+  }
+
   try {
     await client.connect();
+    isConnected = true;
     console.log("MongoDB connected successfully");
-    const db = client.db(dbName);
+
+    const db = client.db(process.env.MONGODB_DB_NAME || "Databas");
 
     // Create text index on 'subject' and 'location'
     const lessons = db.collection("lessons");
@@ -33,10 +37,23 @@ async function connectToDatabase() {
       location: "text",
     });
 
+    // Handle application shutdown
+    process.on("SIGINT", async () => {
+      try {
+        await client.close();
+        console.log("MongoDB connection closed through app termination");
+        process.exit(0);
+      } catch (err) {
+        console.error("Error during MongoDB disconnection:", err);
+        process.exit(1);
+      }
+    });
+
     return db;
   } catch (err) {
-    console.error("MongoDB connection failed", err);
-    process.exit(1);
+    console.error("MongoDB connection failed:", err);
+    // Don't exit process, let the application handle the error
+    throw err;
   }
 }
 
