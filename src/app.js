@@ -137,6 +137,27 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Serve the Vue frontend in production
+if (process.env.NODE_ENV === "production") {
+  // Assume the Vue build is in a 'dist' directory inside the server project
+  const staticPath = path.join(__dirname, "../dist");
+  console.log(`Serving static files from: ${staticPath}`);
+
+  // Serve static files
+  app.use(express.static(staticPath));
+
+  // For any other routes, serve the index.html
+  app.get("*", (req, res) => {
+    if (
+      !req.path.startsWith("/lessons") &&
+      !req.path.startsWith("/order") &&
+      !req.path.startsWith("/health")
+    ) {
+      res.sendFile(path.join(staticPath, "index.html"));
+    }
+  });
+}
+
 // Catch-all route for 404s
 app.use("*", (req, res) => {
   console.log(`404 Not Found: ${req.method} ${req.originalUrl}`);
