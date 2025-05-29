@@ -28,11 +28,8 @@ app.use(limiter);
 
 // CORS configuration
 const allowedOrigins = [
-  "http://localhost:5173", // Vue development server
   "http://localhost:8000", // Local development
-  "https://*.onrender.com", // Render deployments
-  "https://oseembiya.github.io", // GitHub Pages
-  "https://oseembiya.github.io/Vue/", // GitHub Pages with Vue path
+  "https://oseembiya.github.io/Vue/", // production
 ];
 
 app.use(
@@ -71,7 +68,7 @@ app.get("/", (req, res) => {
   console.log("Root route accessed");
   try {
     res.json({
-      message: "Welcome to the ParentPay API",
+      message: "Welcome to the ParentPay app",
       version: "1.0.0",
       status: "operational",
       endpoints: {
@@ -136,6 +133,27 @@ app.get("/health", (req, res) => {
     environment: process.env.NODE_ENV || "development",
   });
 });
+
+// Serve the Vue frontend in production
+if (process.env.NODE_ENV === "production") {
+  // Assume the Vue build is in a 'dist' directory inside the server project
+  const staticPath = path.join(__dirname, "../dist");
+  console.log(`Serving static files from: ${staticPath}`);
+
+  // Serve static files
+  app.use(express.static(staticPath));
+
+  // For any other routes, serve the index.html
+  app.get("*", (req, res) => {
+    if (
+      !req.path.startsWith("/lessons") &&
+      !req.path.startsWith("/order") &&
+      !req.path.startsWith("/health")
+    ) {
+      res.sendFile(path.join(staticPath, "index.html"));
+    }
+  });
+}
 
 // Catch-all route for 404s
 app.use("*", (req, res) => {
