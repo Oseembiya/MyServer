@@ -30,8 +30,7 @@ app.use(limiter);
 const allowedOrigins = [
   "http://localhost:8000", // Local development
   "http://localhost:5173", // Vite dev server
-  "https://oseembiya.github.io", // GitHub Pages domain
-  "https://your-username.github.io", // Replace with your actual GitHub username
+  "https://oseembiya.github.io", // GitHub Pages domain// Replace with your actual GitHub username
 ];
 
 app.use(
