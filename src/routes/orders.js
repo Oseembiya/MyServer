@@ -2,6 +2,28 @@ const express = require("express");
 const router = express.Router();
 const { ObjectId } = require("mongodb");
 
+// GET all orders (or return endpoint info)
+router.get("/", async (req, res, next) => {
+  try {
+    // Option 1: Return all orders
+    const orders = await req.db.collection("order").find({}).toArray();
+    res.status(200).json({
+      message: "Orders retrieved successfully",
+      count: orders.length,
+      orders: orders,
+    });
+
+    // Option 2: Just return endpoint information (if you don't want to list orders)
+    // res.status(200).json({
+    //   message: "Orders endpoint",
+    //   availableMethods: ["POST"],
+    //   description: "Use POST to create new orders"
+    // });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Create new order
 router.post("/", async (req, res, next) => {
   const orderData = req.body;
