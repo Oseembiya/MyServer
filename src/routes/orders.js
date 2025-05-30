@@ -12,13 +12,6 @@ router.get("/", async (req, res, next) => {
       count: orders.length,
       orders: orders,
     });
-
-    // Option 2: Just return endpoint information (if you don't want to list orders)
-    // res.status(200).json({
-    //   message: "Orders endpoint",
-    //   availableMethods: ["POST"],
-    //   description: "Use POST to create new orders"
-    // });
   } catch (error) {
     next(error);
   }
