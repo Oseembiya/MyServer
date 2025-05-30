@@ -8,6 +8,7 @@
     "start": "node src/app.js",
     "render-start": "node src/app.js",
     "dev": "nodemon src/app.js",
+    "build": "cd ../Vue && npm install && npm run build-for-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -12,30 +12,31 @@ const ordersRouter = require("./routes/orders");
 
 const app = express();
 
-// Security middleware with crossOriginResourcePolicy disabled to allow image loading
+// Security middleware
 app.use(
   helmet({
-    crossOriginResourcePolicy: false, // Allow loading resources from different origins
+    crossOriginResourcePolicy: false,
   })
 );
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
 });
 app.use(limiter);
 
-// CORS configuration
+// CORS configuration - Updated for GitHub Pages
 const allowedOrigins = [
   "http://localhost:8000", // Local development
-  "https://oseembiya.github.io/Vue/", // production
+  "http://localhost:5173", // Vite dev server
+  "https://oseembiya.github.io", // GitHub Pages domain
+  "https://your-username.github.io", // Replace with your actual GitHub username
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
       if (
@@ -49,6 +50,7 @@ app.use(
       ) {
         callback(null, true);
       } else {
+        console.log(`CORS blocked origin: ${origin}`);
         callback(new Error("Not allowed by CORS"));
       }
     },
@@ -66,21 +68,17 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // Root route
 app.get("/", (req, res) => {
   console.log("Root route accessed");
-  try {
-    res.json({
-      message: "Welcome to the ParentPay app",
-      version: "1.0.0",
-      status: "operational",
-      endpoints: {
-        lessons: "/lessons",
-        orders: "/order",
-        health: "/health",
-      },
-    });
-  } catch (error) {
-    console.error("Error in root route:", error);
-    res.status(500).json({ error: "Server error in root route" });
-  }
+  res.json({
+    message: "Welcome to the ParentPay API",
+    version: "1.0.0",
+    status: "operational",
+    frontend: "https://oseembiya.github.io/Vue/", // Link to your frontend
+    endpoints: {
+      lessons: "/lessons",
+      orders: "/order",
+      health: "/health",
+    },
+  });
 });
 
 // Database middleware
@@ -96,15 +94,12 @@ app.use(async (req, res, next) => {
 // Static file serving for lesson images with CORS headers
 const imagePath = path.resolve(__dirname, "../");
 app.use("/", (req, res, next) => {
-  // Check if the request path starts with /images/
   if (req.path.startsWith("/images/")) {
     const fileRequested = path.join(imagePath, req.path);
     fs.access(fileRequested, fs.constants.F_OK, (err) => {
       if (err) {
-        // If image not found, pass to next middleware
         return next();
       } else {
-        // Set specific CORS headers for images
         res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
         res.setHeader(
@@ -115,12 +110,11 @@ app.use("/", (req, res, next) => {
       }
     });
   } else {
-    // Not an image request, pass to next middleware
     next();
   }
 });
 
-// Routes
+// API Routes
 app.use("/lessons", lessonsRouter);
 app.use("/order", ordersRouter);
 
@@ -134,33 +128,13 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Serve the Vue frontend in production
-if (process.env.NODE_ENV === "production") {
-  // Assume the Vue build is in a 'dist' directory inside the server project
-  const staticPath = path.join(__dirname, "../dist");
-  console.log(`Serving static files from: ${staticPath}`);
-
-  // Serve static files
-  app.use(express.static(staticPath));
-
-  // For any other routes, serve the index.html
-  app.get("*", (req, res) => {
-    if (
-      !req.path.startsWith("/lessons") &&
-      !req.path.startsWith("/order") &&
-      !req.path.startsWith("/health")
-    ) {
-      res.sendFile(path.join(staticPath, "index.html"));
-    }
-  });
-}
-
 // Catch-all route for 404s
 app.use("*", (req, res) => {
   console.log(`404 Not Found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     error: "Not Found",
     message: `The requested resource at ${req.originalUrl} was not found`,
+    frontend: "https://oseembiya.github.io/Vue/",
   });
 });
 
@@ -171,16 +145,18 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
   console.log(
-    `Server is running on port ${PORT} in ${
+    `API Server is running on port ${PORT} in ${
       process.env.NODE_ENV || "development"
     } mode`
+  );
+  console.log(
+    `Frontend should be available at: https://oseembiya.github.io/Vue/`
   );
 });
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled Promise Rejection:", err);
-  // Close server & exit process
   server.close(() => process.exit(1));
 });
 
